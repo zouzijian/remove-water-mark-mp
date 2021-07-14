@@ -10,21 +10,21 @@
       <view class="field">
         <view class="label">母猫名称:</view>
         <view class="value">
-          <input type="text" @change="onFemaleChange">
+          <input type="text" @change="onFemaleChange" />
           <image mode="aspectFill" class="avatar" src="{{ model.female_avatar }}" @tap="uploadTap('female')"/>
         </view>
       </view>
       <view class="field">
         <view class="label">公猫名称:</view>
         <view class="value">
-          <input type="text" @change="onMaleChange">
+          <input type="text" @change="onMaleChange" />
           <image mode="aspectFill" class="avatar" data-gender="male" src="{{ model.male_avatar }}" @tap="uploadTap('male')"/>
         </view>
       </view>
       <view class="field">
         <view class="label">怀孕周期:</view>
         <view class="value" style="display: flex;align-items: center;">
-          <input style="width: 48px;text-align: center;display: inline-block;" type="number" value="{{ model.pregnancy }}" @change="onPregnancyChange">
+          <input style="width: 48px;text-align: center;display: inline-block;" type="number" value="{{ model.pregnancy }}" @change="onPregnancyChange" />
           <text style="font-size: 14px;font-weight: 500;vertical-align: 16px;margin-left: 10px;">天</text>
         </view>
       </view>

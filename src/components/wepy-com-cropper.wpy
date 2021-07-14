@@ -14,6 +14,7 @@
     disable-scroll="true"
     style="position: fixed; top: -{{width * pixelRatio}}px; left: -{{height * pixelRatio}}px; width:{{width * pixelRatio}}px;height:{{height * pixelRatio}}px;"
     canvas-id="targetCropper">
+  </canvas>
 </template>
 
 <script>

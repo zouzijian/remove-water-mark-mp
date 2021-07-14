@@ -114,7 +114,7 @@
               <image src="../assets/images/click.svg"></image>
             </view>
             <view wx:else class="edit">
-              <input type="number" @input="onCatNumberChange">
+              <input type="number" @input="onCatNumberChange" />
               <image src="../assets/images/confirm.svg" @tap="updateCatNumber"></image>
               <image src="../assets/images/cancel.svg" @tap="onCancelCatNumberChange"></image>
             </view>
