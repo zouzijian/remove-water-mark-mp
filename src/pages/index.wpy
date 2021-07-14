@@ -329,11 +329,18 @@ export default class Index extends wepy.page {
     request('/ad').post().then(data => {
       // 通知开启且在有效期内
       if (data.status === 1 && tools.strtotime(data.start_time) < Date.now() && tools.strtotime(data.end_time) > Date.now()) {
-        var lastShowDate = wx.getStorageSync('home_ad_date')
-        var displayTimes = wx.getStorageSync('home_ad_times')
+        var lastAdId = wx.getStorageSync('home_ad_id')
+        var lastShowDate = 0
+        var displayTimes = 0
+        if (lastAdId === data.id) {
+          lastShowDate = wx.getStorageSync('home_ad_date')
+          displayTimes = wx.getStorageSync('home_ad_times')
+        }
         // 展示次数及展示间隔都满足条件才继续展示
         if (displayTimes < data.display_times && (lastShowDate + data.display_interval * 60 * 60 * 24 * 1000) < Date.now()) {
+          wx.setStorageSync('home_ad_id', data.id)
           wx.setStorageSync('home_ad_date', Date.now())
+          wx.setStorageSync('home_ad_times', displayTimes + 1)
           this.showAd = true
           this.adInfo = data
           this.$apply()
