@@ -1,5 +1,15 @@
 <template>
   <view>
+    <view class="notice" wx:if="{{noticeMessagesList.length > 0}}">
+      <image src="../assets/images/celebrate.png"></image>
+      <swiper class='swiper-container' autoplay='true' model:current="{{noticeCurrentIndex}}" vertical='true' circular='true' interval='4000'>
+        <repeat for="{{noticeMessagesList}}">
+          <swiper-item>
+            <rich-text nodes="{{item}}"></rich-text>
+          </swiper-item>
+        </repeat>
+      </swiper>
+    </view>
     <view class="all-panel">
       <view class="panel" wx:if="{{week.length}}">
         <view class="section">
@@ -169,6 +179,7 @@
 import wepy from 'wepy'
 import request from '@/utils/request'
 import tools from '@/utils/tools'
+import Websocket from '@/utils/websocket'
 import Card from '@/components/EggCard'
 
 export default class Index extends wepy.page {
@@ -193,7 +204,9 @@ export default class Index extends wepy.page {
     history: [],
     showAd: false,
     adInfo: null,
-    showCatNumberInput: false
+    showCatNumberInput: false,
+    noticeMessagesList: [],
+    noticeCurrentIndex: 0
   }
 
   computed = {}
@@ -310,6 +323,7 @@ export default class Index extends wepy.page {
       this.getAd()
       this.getItems()
     }
+    this.initNotice()
   }
 
   onPullDownRefresh() {
@@ -321,6 +335,47 @@ export default class Index extends wepy.page {
     if (this.init) {
       this.getItems()
     }
+  }
+  /**
+   * 获取顶部通知列表
+   */
+  initNotice() {
+    var websocket = new Websocket({
+      isReconnection: true
+    })
+    // 连接成功后通过回调函数获取通知列表
+    websocket.customSocketOpened(res => {
+      websocket.sendWebSocketMsg({
+        data: JSON.stringify({
+          'event': 'getNoticeList'
+        })
+      })
+    })
+    // 初始化连接
+    websocket.initWebSocket()
+
+    // 监听消息接收
+    var that = this
+    websocket.onReceivedMsg(data => {
+      console.log(data)
+      // 如果有列表就初始化数组
+      if (data.notice_messages_list !== undefined && data.notice_messages_list instanceof Array && data.notice_messages_list.length > 0) {
+        that.noticeMessagesList = data.notice_messages_list
+        that.$apply()
+      }
+      // 如果有单条数据就塞入数组
+      if (data.notice_message !== undefined && data.notice_message !== '') {
+        // 插入当前播放条数后两条位置
+        that.noticeMessagesList.splice(that.noticeCurrentIndex + 2, 0, data.notice_message)
+        // 去重
+        that.noticeMessagesList = tools.array_unique(that.noticeMessagesList)
+        // 最多保留十条
+        if (that.noticeMessagesList.length > 10) {
+          that.noticeMessagesList = that.noticeMessagesList.slice(0, 10)
+        }
+        that.$apply()
+      }
+    })
   }
 
   // 首屏广告蒙版
@@ -885,4 +940,46 @@ export default class Index extends wepy.page {
     left: 146px;
   }
 
+  .notice {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 2px 12px;
+    display: flex;
+    justify-items: center;
+    align-content: center;
+    margin-bottom: 8px;
+
+    image {
+      width: 20px;
+      height: 20px;
+    }
+
+    .swiper-container {
+      margin-left: 6px;
+      width: 100%;
+      height: 20px;
+
+      swiper-item {
+        position: absolute;
+        transform: translateY(-50%);
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+
+        rich-text {
+          color: #38485C;
+          font-size: 12px;
+          font-weight: 400;
+          font-family: PingFang SC;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow:ellipsis;
+        }
+      }
+    }
+  }
 </style>

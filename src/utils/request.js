@@ -36,8 +36,8 @@ class WxRequest {
   }
 
   request() {
-    const options = this.defaultOptions,
-      that = this
+    var options = this.defaultOptions
+    var that = this
     return new Promise((resolve, reject) => {
       wx.request(
         Object.assign({}, options, {
@@ -59,7 +59,7 @@ class WxRequest {
         wx.setStorageSync('token', null)
       }
       // wx.uploadFile返回的data只有string类型，不会根据content-type自动转object
-      if (typeof result.data === 'string' && result.data !== "") {
+      if (typeof result.data === 'string' && result.data !== '') {
         result.data = JSON.parse(result.data)
       }
       if (result.statusCode >= 200 && result.statusCode < 400) {
