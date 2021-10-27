@@ -2,7 +2,7 @@
   <view>
     <view class="notice" wx:if="{{noticeMessagesList.length > 0}}">
       <image src="../assets/images/celebrate.png"></image>
-      <swiper class='swiper-container' autoplay='true' model:current="{{noticeCurrentIndex}}" vertical='true' circular='true' interval='4000'>
+      <swiper class='swiper-container' autoplay='true' model:current="{{noticeCurrentIndex}}" vertical='true' circular='true' interval='5000'>
         <repeat for="{{noticeMessagesList}}">
           <swiper-item>
             <rich-text nodes="{{item}}"></rich-text>
@@ -168,7 +168,7 @@
     <!-- 广告展示 -->
     <view class="mask" hidden="{{!showAd}}" catchtouchmove="true">
       <view class="AdView-mask">
-        <image class="mask-img" mode="widthFix" src="{{ adInfo.image }}" show-menu-by-longpress="true"></image>
+        <image class="mask-img" mode="widthFix" src="{{ adInfo.image }}" show-menu-by-longpress="true" @tap="adJump({{ adInfo }})"></image>
         <image class="close-mask" bindtap="hiddenMsak" src="../assets/images/error.svg"></image>
       </view>
     </view>
@@ -254,6 +254,17 @@ export default class Index extends wepy.page {
       })
       this.showCatNumberInput = false
       this.$apply()
+    },
+    adJump(info) {
+      console.log(info)
+      if (info.appid !== '') {
+        wx.navigateToMiniProgram({
+          'appId': 'wxd947200f82267e58',
+          'path': 'pages/wjxqList/wjxqList?activityId=O2FWnaS'
+        })
+      } else {
+        console.log('个人主体不支持跳转h5')
+      }
     }
   }
 
