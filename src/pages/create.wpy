@@ -11,7 +11,10 @@
         <view class="label">母猫名称:</view>
         <view class="value">
           <input type="text" @change="onFemaleChange" />
-          <image mode="aspectFill" class="avatar" src="{{ model.female_avatar }}" @tap="uploadTap('female')"/>
+          <view style="position: relative; text-align:center;">
+            <image mode="aspectFill" class="avatar" src="{{ model.female_avatar }}" @tap="uploadTap('female')"/>
+            <view class="float_badge">点击头像可修改</view>
+          </view>
         </view>
       </view>
       <view class="field">
@@ -48,8 +51,8 @@
   </view>
   <view class="cropper-panel" wx:if="{{showCropper}}">
     <cropper :options="cropperOpt" @beforeImageLoad="bl"></cropper>
-    <view class="image-notice">请使用含有猫咪的图片~</view>
-    <view class="image-notice">如识别异常请尝试调整裁剪部分或跳过</view>
+<!--    <view class="image-notice">请使用含有猫咪的图片~</view>-->
+<!--    <view class="image-notice">如识别异常请尝试调整裁剪部分或跳过</view>-->
     <view class="operate">
       <button class="cancel" @tap="cancel">取消</button>
       <button @tap="getCropperImage">确认</button>
@@ -353,6 +356,32 @@ export default class Index extends wepy.page {
             vertical-align: -4.5px;
           }
         }
+
+        .float_badge {
+          top: -35px;
+          left: -15px;
+          width: 90px;
+          text-align: center;
+          color: #ffffff;
+          position: absolute;
+          font-size: 10px;
+          font-weight: 500;
+          padding: 4px 6px;
+          border-radius: 10px;
+          background: #71c9ce;
+          &:before{
+            content: '';
+            width:0;
+            height:0;
+            bottom: -8px;
+            left: 40px;
+            position: absolute;
+            display:inline-block;
+            border-top: 8px solid #71c9ce;
+            border-left:6px solid transparent;
+            border-right: 6px solid transparent;
+          }
+        }
       }
     }
   }
@@ -365,6 +394,10 @@ export default class Index extends wepy.page {
     padding-bottom: 300px;
     z-index: 1000;
 
+    .cropper {
+      z-index: 1000;
+    }
+
     .image-notice {
       text-align: center;
       text-justify: auto;
@@ -373,20 +406,22 @@ export default class Index extends wepy.page {
 
     .operate {
       position: fixed;
-      bottom: 100px;
+      bottom: 80px;
       display: flex;
       justify-content: space-between;
       width: 100%;
-      z-index: 1001;
+      z-index: 9999999;
 
       button {
         width: 150px;
         background: #70C9CD;
         color: #ffffff;
+        z-index: 9999999;
       }
 
       .cancel {
         background: #4d555f;
+        z-index: 9999999;
       }
     }
   }
