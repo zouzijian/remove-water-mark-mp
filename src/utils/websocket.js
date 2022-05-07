@@ -1,5 +1,5 @@
-const wsUrl = 'ws://127.0.0.1:5200'
-// const wsUrl = 'wss://bear.todev.ink/ws'
+// const wsUrl = 'ws://127.0.0.1:5200'
+const wsUrl = 'wss://bear.yaqi.wang/ws'
 
 export default class Websocket {
   constructor({heartCheck, isReconnection}) {

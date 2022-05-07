@@ -1,5 +1,5 @@
 // const apiURL = 'http://bear-api.test/api'
-const apiURL = 'https://bear.todev.ink/api'
+const apiURL = 'https://bear.yaqi.wang/api'
 
 class WxRequest {
   constructor(config) {
