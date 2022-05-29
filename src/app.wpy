@@ -23,6 +23,10 @@ export default class extends wepy.app {
   }
 
   globalData = {}
+  options = {
+    showMaleInfo: true,
+    countdownType: 'waiting'
+  }
 
   constructor() {
     super()
@@ -30,9 +34,22 @@ export default class extends wepy.app {
   }
 
   async onLaunch() {
+    // 获取本地设置
+    var options = wx.getStorageSync('options')
+    if (options) {
+      for (var key in options) {
+        // 仅覆盖缓存的key
+        this.options[key] = options[key]
+      }
+    }
   }
 }
 </script>
+
+<style lang="less">
+  @import "./colorui/main.wxss";
+  @import "./colorui/icon.wxss";
+</style>
 
 <style lang="scss">
   page {

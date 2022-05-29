@@ -1,8 +1,16 @@
-// const apiURL = 'http://bear-api.test/api'
-const apiURL = 'https://bear.yaqi.wang/api'
-
 class WxRequest {
   constructor(config) {
+    let apiURL
+    switch (__wxConfig.envVersion) {
+      case 'develop':
+        apiURL = 'http://bear-api.test:8000/api'
+        break
+      // case 'trial':
+      // case 'release':
+      default:
+        apiURL = 'https://bear.yaqi.wang/api'
+        break
+    }
     let header = {
       Accept: 'application/vnd.egg.v1+json',
       Authorization: wx.getStorageSync('token')
@@ -47,6 +55,9 @@ class WxRequest {
             .then((data) => resolve(data))
             .catch((error) => reject(error))
           },
+          fail: function (err) {
+            reject(err)
+          },
           complete: function(res) {}
         })
       )
@@ -71,7 +82,7 @@ class WxRequest {
     })
   }
 
-  upload() {
+  upload(onProcess = function () {}) {
     var that = this
     return new Promise((resolve, reject) => {
       wx.uploadFile(
@@ -87,7 +98,7 @@ class WxRequest {
           },
           complete: function(res) {}
         })
-      )
+      ).onProgressUpdate(onProcess)
     })
   }
 }

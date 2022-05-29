@@ -1,176 +1,299 @@
 <template>
-  <view>
-    <view class="notice" wx:if="{{noticeMessagesList.length > 0}}">
-      <image src="../assets/images/celebrate.png"></image>
-      <swiper class='swiper-container' autoplay='true' model:current="{{noticeCurrentIndex}}" vertical='true' circular='true' interval='5000'>
-        <repeat for="{{noticeMessagesList}}">
-          <swiper-item>
-            <rich-text nodes="{{item}}"></rich-text>
-          </swiper-item>
-        </repeat>
-      </swiper>
-    </view>
-    <view class="all-panel">
-      <view class="panel" wx:if="{{week.length}}">
-        <view class="section">
-          <view>本周
-            <text> / Current</text>
-          </view>
-          <view>有 {{week.length}} 只猫会在本周内进入预产期</view>
-        </view>
-        <view>
-          <repeat for="{{week}}">
-            <view class="card" @tap="showModal({{item}})">
-              <egg-card :model="item"></egg-card>
-            </view>
+  <scroll-view scroll-y class="DrawerPage {{modalName=='sideModal'?'show':''}}"
+               refresher-enabled="{{true}}"
+               bindrefresherrefresh="onScrollPullDownRefresh"
+               refresher-triggered="{{triggered}}" >
+    <view style="padding: 12px 24px;">
+      <view class="notice" wx:if="{{noticeMessagesList.length > 0}}">
+        <image src="../assets/images/celebrate.png"></image>
+        <swiper class='swiper-container' autoplay='true' model:current="{{noticeCurrentIndex}}" vertical='true' circular='true' interval='5000'>
+          <repeat for="{{noticeMessagesList}}">
+            <swiper-item>
+              <rich-text nodes="{{item}}"></rich-text>
+            </swiper-item>
           </repeat>
-        </view>
+        </swiper>
       </view>
-
-      <view class="panel" wx:if="{{other.length}}">
-        <view class="section">
-          <view>其他
-            <text> / Other</text>
-          </view>
-          <view>有 {{other.length}} 只猫等待进入预产期</view>
-        </view>
-        <view>
-          <repeat for="{{other}}">
-            <view class="card" @tap="showModal({{item}})">
-              <egg-card :model="item"></egg-card>
+      <view class="all-panel">
+        <view class="panel" wx:if="{{week.length}}">
+          <view class="section">
+            <view>本周
+              <text> / Current</text>
             </view>
-          </repeat>
-        </view>
-      </view>
-
-      <view class="panel" wx:if="{{history.length}}">
-        <view class="section">
-          <view>历史
-            <text> / History</text>
+            <view>有 {{week.length}} 只猫会在本周内进入预产期</view>
           </view>
-          <view>共有 {{history.length}} 只蛋已经破壳啦~</view>
-        </view>
-        <view>
-          <repeat for="{{history}}">
-            <view class="card" @tap="showModal({{item}})">
-              <egg-card :model="item"></egg-card>
-            </view>
-          </repeat>
-        </view>
-      </view>
-
-      <view class="empty" wx:if="{{!history.length && !other.length && !week.length && init}}">
-        <image src="../assets/images/children.svg"></image>
-        <view>您没有任何记录~</view>
-      </view>
-
-      <button class="feedback" open-type="feedback">
-        <text>意见反馈</text>
-        <image src="../assets/images/next3.svg"></image>
-      </button>
-
-      <view class="addation" wx:if="{{portals}}">
-        <button open-type="share" class="share">
-          <image class="cover" src="../assets/images/share.svg"></image>
-        </button>
-
-        <navigator url="/pages/create" class="btn">
-          <text>新增记录</text>
-          <image class="coverd" src="../assets/images/next1.svg"></image>
-        </navigator>
-      </view>
-    </view>
-    <view class="modal" catchtouchmove="true" wx:if="{{modal}}" @tap="closeModal"></view>
-    <view wx:if="{{modal}}" class="drawer" catchtouchmove="true">
-      <view class="drawer-header">
-        <image class="avatar" src="{{modal.female_avatar}}"></image>
-        <text>{{modal.female_name}} 💗 {{modal.male_name}}</text>
-        <image wx:if="{{ modal.male_avatar }}" class="avatar" src="{{modal.male_avatar}}"></image>
-        <view class="right">
-          <image src="../assets/images/error.svg" @tap="closeModal" class="close"></image>
-        </view>
-      </view>
-      <view class="drawer-body">
-
-        <view wx:if="{{!modal.is_break}}">
-          <view wx:if="{{modal.countdown>=0}}">
-            <view class="desc">距离{{modal.female_name}}生产预计还有</view>
-            <view class="day">
-              <text class="t">{{modal.countdown}}</text>
-              <text class="m">天</text>
-            </view>
-            <view class="cracked_at">预计: {{modal.cracked_at}}生产</view>
-          </view>
-          <view wx:else="{{modal.countdown<0}}">
-            <view class="desc">距离{{modal.female_name}}生产已逾期</view>
-            <view class="day danger">
-              <text class="t">{{modal.countdown*-1}}</text>
-              <text class="m">天</text>
-            </view>
-            <view class="cracked_at">预计: {{modal.cracked_at}}生产</view>
-          </view>
-
-        </view>
-
-        <view wx:if="{{modal.is_break}}">
-          <view class="cat_number" wx:if="{{!showCatNumberInput && modal.cat_number !== 0}}">
-            <repeat for="{{modal.cat_number}}">
-              <image class="kitten" src="../assets/images/kitten.svg"></image>
+          <view>
+            <repeat for="{{week}}">
+              <view class="card" @tap="showModal({{item}})">
+                <egg-card :model="item" :options="options"></egg-card>
+              </view>
             </repeat>
           </view>
-          <view wx:else class="actions center">
-            <view wx:if="{{!showCatNumberInput}}" class="go_edit" @tap="onEditCatNumber">
-              <text>补充小猫数量</text>
-              <image src="../assets/images/click.svg"></image>
-            </view>
-            <view wx:else class="edit">
-              <input type="number" @input="onCatNumberChange" />
-              <image src="../assets/images/confirm.svg" @tap="updateCatNumber"></image>
-              <image src="../assets/images/cancel.svg" @tap="onCancelCatNumberChange"></image>
-            </view>
+        </view>
 
+        <view class="panel" wx:if="{{other.length}}">
+          <view class="section">
+            <view>其他
+              <text> / Other</text>
+            </view>
+            <view>有 {{other.length}} 只猫等待进入预产期</view>
           </view>
-          <view class="desc">小生命已经破壳而出啦~，总孕期为</view>
+          <view>
+            <repeat for="{{other}}">
+              <view class="card" @tap="showModal({{item}})">
+                <egg-card :model="item" :options="options"></egg-card>
+              </view>
+            </repeat>
+          </view>
+        </view>
+
+        <view class="panel" wx:if="{{history.length}}">
+          <view class="section">
+            <view>历史
+              <text> / History</text>
+            </view>
+            <view>共有 {{history.length}} 只蛋已经破壳啦~</view>
+          </view>
+          <view>
+            <repeat for="{{history}}">
+              <view class="card" @tap="showModal({{item}})">
+                <egg-card :model="item" :options="options"></egg-card>
+              </view>
+            </repeat>
+          </view>
+        </view>
+
+        <view class="empty" wx:if="{{!history.length && !other.length && !week.length && init}}">
+          <image src="../assets/images/children.svg"></image>
+          <view>您没有任何记录~</view>
+        </view>
+
+        <button class="feedback" open-type="feedback">
+          <text>意见反馈</text>
+          <image src="../assets/images/next3.svg"></image>
+        </button>
+
+      </view>
+    </view>
+  </scroll-view>
+  <view class="modal" catchtouchmove="true" wx:if="{{modal}}" @tap="closeModal"></view>
+  <view wx:if="{{modal}}" class="drawer" catchtouchmove="true">
+    <view class="drawer-header">
+      <image class="avatar" src="{{modal.female_avatar}}"></image>
+      <text>{{modal.female_name}} 💗 {{modal.male_name}}</text>
+      <image wx:if="{{ modal.male_avatar }}" class="avatar" src="{{modal.male_avatar}}"></image>
+      <view class="right">
+        <image src="../assets/images/error.svg" @tap="closeModal" class="close"></image>
+      </view>
+    </view>
+    <view class="drawer-body">
+
+      <view wx:if="{{!modal.is_break}}">
+        <view wx:if="{{modal.countdown>=0}}">
+          <view class="desc">距离{{modal.female_name}}生产预计还有</view>
           <view class="day">
-            <text class="t">{{modal.during}}</text>
+            <text class="t">{{modal.countdown}}</text>
             <text class="m">天</text>
           </view>
-          <view class="cracked_at">{{modal.breeding_at}} - {{modal.cracked_at}}</view>
+          <view class="cracked_at">预计: {{modal.cracked_at}}生产</view>
+        </view>
+        <view wx:else="{{modal.countdown<0}}">
+          <view class="desc">距离{{modal.female_name}}生产已逾期</view>
+          <view class="day danger">
+            <text class="t">{{modal.countdown*-1}}</text>
+            <text class="m">天</text>
+          </view>
+          <view class="cracked_at">预计: {{modal.cracked_at}}生产</view>
         </view>
 
-        <view class="tips">
-          <view class="tips_header">
-            <image src="../assets/images/education.svg"></image>
-            <text>破壳小提示</text>
-          </view>
-          <view class="tips_body">{{modal.tips}}</view>
-        </view>
+      </view>
 
-        <view class="actions {{ modal.is_break ? 'center' : '' }}">
-          <view class="trash" @tap="delCurrent">
-            <image src="../assets/images/can.svg"></image>
-            删除
+      <view wx:if="{{modal.is_break}}">
+        <view class="cat_number flex align-center" wx:if="{{!showCatNumberInput && modal.cat_number !== 0}}">
+          <repeat for="{{modal.cat_number}}">
+            <image class="kitten" src="../assets/images/kitten.svg"></image>
+          </repeat>
+          <text wx:if="{{modal.cat_number > 6}}" class="text-cyan">（{{modal.cat_number}}）</text>
+        </view>
+        <view wx:else class="actions center">
+          <view wx:if="{{!showCatNumberInput}}" class="go_edit" @tap="onEditCatNumber">
+            <text>补充小猫数量</text>
+            <image src="../assets/images/click.svg"></image>
           </view>
-          <view class="right" wx:if="{{!modal.is_break}}">
-            <view>
-              <navigator url="{{ '/pages/break?id=' + modal.id }}" class="done">已经破壳啦
-                <image src="../assets/images/next.svg"></image>
-              </navigator>
-            </view>
+          <view wx:else class="edit">
+            <input type="number" @input="onCatNumberChange" />
+            <image src="../assets/images/confirm.svg" @tap="updateCatNumber"></image>
+            <image src="../assets/images/cancel.svg" @tap="onCancelCatNumberChange"></image>
+          </view>
+
+        </view>
+        <view class="desc">小生命已经破壳而出啦~，总孕期为</view>
+        <view class="day">
+          <text class="t">{{modal.during}}</text>
+          <text class="m">天</text>
+        </view>
+        <view class="cracked_at">{{modal.breeding_at}} - {{modal.cracked_at}}</view>
+      </view>
+
+      <view class="tips">
+        <view class="tips_header">
+          <image src="../assets/images/education.svg"></image>
+          <text>破壳小提示</text>
+        </view>
+        <view class="tips_body">{{modal.tips}}</view>
+      </view>
+
+      <view wx:if="{{modal.images.length > 0}}" class="tips margin-tb">
+        <view class="tips_header">
+          <image mode="aspectFit" src="../assets/images/movie.png"></image>
+          <text>精彩回忆</text>
+        </view>
+        <view class="cu-avatar-group" style="width:100%;direction:ltr;">
+          <image class="cu-avatar round bg-white lg" @tap="previewImages" wx:for="{{modal.images}}" wx:key="index" data-src="{{modal.images[index]}}" style="background-image:url({{modal.images[index]}});"/>
+        </view>
+      </view>
+
+      <view class="actions {{ modal.is_break ? 'center' : '' }}">
+        <view class="trash" @tap="delCurrent">
+          <image src="../assets/images/can.svg"></image>
+          删除
+        </view>
+        <view class="right" wx:if="{{!modal.is_break}}">
+          <view>
+            <navigator url="{{ '/pages/break?id=' + modal.id }}" class="done">已经破壳啦
+              <image src="../assets/images/next.svg"></image>
+            </navigator>
           </view>
         </view>
       </view>
     </view>
+  </view>
 
-    <!--添加小程序引导-->
-    <view wx:if="{{showAlert}}" class="float_badge">添加到 「我的小程序」,使用更方便哦~</view>
-
-    <!-- 广告展示 -->
-    <view class="mask" hidden="{{!showAd}}" catchtouchmove="true">
-      <view class="AdView-mask">
-        <image class="mask-img" mode="widthFix" src="{{ adInfo.image }}" show-menu-by-longpress="true" @tap="adJump({{ adInfo }})"></image>
-        <image class="close-mask" bindtap="hiddenMsak" src="../assets/images/error.svg"></image>
+  <!--  抽屉右侧bar-->
+  <view class="DrawerClose {{modalName=='sideModal'?'show':''}}" bindtap="hideSideModal">
+    <text class="cuIcon-pullright"></text>
+  </view>
+  <!--  全屏抽屉-->
+  <scroll-view scroll-y class="DrawerWindow {{modalName=='sideModal'?'show':''}}">
+    <view class="cu-modal {{userInfoEditModal?'show':''}}">
+      <view class="cu-dialog" style="width:96%;">
+        <view class="cu-bar bg-white justify-end">
+          <view class="content">编辑信息</view>
+          <view class="action" bindtap="hideUserInfoEditModal">
+            <text class="cuIcon-close text-red"></text>
+          </view>
+        </view>
+          <form>
+            <view class="cu-form-group">
+              <view class="title {{formErr.avatar?'text-red':''}}">头像<text wx:if="{{formErr.avatar}}" class="cuIcon-warnfill text-red margin-left-sm"></text></view>
+              <button bind:chooseavatar="onChooseAvatar" class="cu-avatar round bg-gray" open-type="chooseAvatar" style="background-image:url({{formData.avatar?formData.avatar:'/assets/images/add.png'}});"></button>
+            </view>
+            <view class="cu-form-group">
+              <view class="title {{formErr.nickname?'text-red':''}}">昵称<text wx:if="{{formErr.nickname}}" class="cuIcon-warnfill text-red margin-left-sm"></text></view>
+              <input bindinput="nicknameInput" type="nickname"  maxlength="10" class="text-right" placeholder="请输入昵称" value="{{formData.nickname}}"></input>
+            </view>
+            <view class="cu-form-group">
+              <view class="title">性别</view>
+              <switch class="switch-sex" checked="{{formData.sex=='1'}}" bindchange="sexChange"></switch>
+            </view>
+            <view class="cu-form-group">
+              <view class="title">地址选择</view>
+              <picker mode="region" bindchange="regionChange" value="{{region}}" custom-item="{{customItem}}">
+                <view class="picker">
+                  {{formData.province?formData.province:'北京市'}}，{{formData.city?formData.city:'北京市'}}，{{formData.county?formData.county:'朝阳区'}}
+                </view>
+              </picker>
+            </view>
+          </form>
+        <view class="cu-bar bg-white justify-end">
+          <view class="action">
+            <button class="cu-btn line-green text-green" bindtap="hideUserInfoEditModal">取消</button>
+            <button class="cu-btn bg-green margin-left" bindtap="updateUserInfo">确定</button>
+          </view>
+        </view>
       </view>
+    </view>
+    <view class="cu-list menu card-menu margin-top-xl margin-bottom-xl shadow-lg">
+      <view wx:if="{{userInfo.id}}" class="cu-list menu-avatar">
+        <view class="cu-item padding-tb" style="height:180rpx;">
+          <view class="cu-avatar round lg" style="background-image:url({{userInfo.avatar?userInfo.avatar:'/assets/images/avatar.jpg'}});">
+            <view wx:if="{{userInfo.sex !== null}}" class="cu-tag badge {{userInfo.sex===1?'cuIcon-male bg-blue':'cuIcon-female bg-pink'}}"></view>
+          </view>
+          <view class="content flex-sub">
+            <view class="text-black" bindtap="showUserInfoEditModal">{{userInfo.nickname?userInfo.nickname:'信息待完善'}}<text class="cuIcon-edit margin-left-sm text-grey"></text></view>
+            <view class="text-gray text-sm flex justify-between">
+              已陪伴您{{userInfo.has_use_days}}天
+              <view class="text-gray">
+                <text class="cuIcon-selection text-yellow margin-right-xs"></text>{{userInfo.orders_num}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="cu-item">
+        <view class="cu-bar justify-center bg-white">
+          <view class="action sub-title">
+            <text class="text-bold text-grey">设置</text>
+            <text class="text-ABC text-grey" style="font-size:10px;">options</text>
+          </view>
+        </view>
+      </view>
+      <view class="cu-item">
+        <view class="content padding-tb-sm">
+            <text class="text-bold cuIcon-male text-blue margin-right-xs"></text>
+            <text class="text-grey">显示公猫信息</text>
+        </view>
+        <view class="action">
+          <switch class="switch-sex sm" bindchange="switchSex" checked="{{options.showMaleInfo}}"></switch>
+        </view>
+      </view>
+      <view class="cu-item">
+        <view class="content padding-tb-sm">
+          <text class="text-bold cuIcon-countdown text-red margin-right-xs"></text>
+          <text class="text-grey">计时顺序</text>
+        </view>
+        <view class="action">
+          <radio-group bindchange="countdownChange" class="block">
+            <radio value="waiting" style="transform:scale(0.6)" checked="{{options.countdownType == 'waiting'}}" class="cyan radio"></radio><text class="text-grey text-sm">倒计时</text>
+            <radio value="leaving" style="transform:scale(0.6)" checked="{{options.countdownType == 'leaving'}}" class="mauve radio margin-left-sm"></radio><text class="text-grey text-sm">正计时</text>
+          </radio-group>
+        </view>
+      </view>
+      <view class="cu-item arrow" @tap="editCats">
+        <view class="content">
+          <text class="cuIcon-emojiflashfill text-pink"></text>
+          <text class="text-grey">猫咪信息</text>
+        </view>
+        <view class="action">
+          <view class="cu-avatar-group">
+            <repeat for="{{userInfo.cat_avatars}}">
+              <view class="cu-avatar round sm" style="background-image:url({{item}});"></view>
+            </repeat>
+          </view>
+<!--          <text class="text-grey text-sm">{{userInfo.cat_avatars.length}}只</text>-->
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!--  悬浮操作按钮-->
+  <view class="addation" wx:if="{{portals && modalName!=='sideModal' && modal===null}}">
+    <button bindtap="showSideModal" data-target="sideModal" class="share cuIcon-list text-white text-xl text-bold">
+    </button>
+
+    <navigator url="/pages/create" class="btn">
+      <text>新增记录</text>
+      <image class="coverd" src="../assets/images/next1.svg"></image>
+    </navigator>
+  </view>
+  <!--添加小程序引导-->
+  <view wx:if="{{showAlert}}" class="float_badge">添加到 「我的小程序」,使用更方便哦~</view>
+
+  <!-- 广告展示 -->
+  <view class="mask" hidden="{{!showAd}}" catchtouchmove="true">
+    <view class="AdView-mask">
+      <image class="mask-img" mode="widthFix" src="{{ adInfo.image }}" show-menu-by-longpress="true" @tap="adJump({{ adInfo }})"></image>
+      <image class="close-mask" bindtap="hiddenMsak" src="../assets/images/error.svg"></image>
     </view>
   </view>
 </template>
@@ -181,6 +304,7 @@ import request from '@/utils/request'
 import tools from '@/utils/tools'
 import Websocket from '@/utils/websocket'
 import Card from '@/components/EggCard'
+import CuCustom from '@/colorui/components/cu-custom'
 
 export default class Index extends wepy.page {
   config = {
@@ -189,7 +313,8 @@ export default class Index extends wepy.page {
   }
 
   components = {
-    'egg-card': Card
+    'egg-card': Card,
+    'cu-custom': CuCustom
   }
 
   mixins = []
@@ -206,7 +331,16 @@ export default class Index extends wepy.page {
     adInfo: null,
     showCatNumberInput: false,
     noticeMessagesList: [],
-    noticeCurrentIndex: 0
+    noticeCurrentIndex: 0,
+    triggered: false,
+    options: {},
+    userInfo: {},
+    formData: {},
+    formErr: {
+      nickname: false,
+      avatar: false
+    },
+    userInfoEditModal: false
   }
 
   computed = {}
@@ -226,6 +360,31 @@ export default class Index extends wepy.page {
       this.modal = null
       this.showCatNumberInput = false
       this.$apply()
+    },
+    showSideModal(e) {
+      this.setData({
+        modalName: e.currentTarget.dataset.target
+      })
+    },
+    hideSideModal(e) {
+      this.setData({
+        modalName: null
+      })
+    },
+    showUserInfoEditModal() {
+      this.formData = this.userInfo
+      this.userInfoEditModal = true
+      this.$apply()
+    },
+    hideUserInfoEditModal() {
+      this.userInfoEditModal = false
+      this.$apply()
+    },
+    tabSelect(e) {
+      this.setData({
+        TabCur: e.currentTarget.dataset.id,
+        scrollLeft: (e.currentTarget.dataset.id - 1) * 60
+      })
     },
     async delCurrent() {
       await request(`/eggs/${this.modal.id}`).delete()
@@ -256,7 +415,6 @@ export default class Index extends wepy.page {
       this.$apply()
     },
     adJump(info) {
-      console.log(info)
       if (info.appid !== '') {
         wx.navigateToMiniProgram({
           'appId': 'wxd947200f82267e58',
@@ -265,13 +423,38 @@ export default class Index extends wepy.page {
       } else {
         console.log('个人主体不支持跳转h5')
       }
+    },
+    switchSex(e) {
+      this.options.showMaleInfo = e.detail.value
+      this.$parent.options = this.options
+      this.$apply()
+      wx.setStorageSync('options', this.options)
+    },
+    countdownChange(e) {
+      this.options.countdownType = e.detail.value
+      this.$parent.options = this.options
+      this.$apply()
+      wx.setStorageSync('options', this.options)
+    },
+    editCats(e) {
+      wx.showToast({
+        title: '待开放,敬请期待～',
+        icon: 'none'
+      })
+    },
+    previewImages(event) {
+      let currentUrl = event.target.dataset.src
+      this.init = false
+      this.$apply()
+      wx.previewImage({
+        current: currentUrl, // 当前显示图片的http链接
+        urls: this.modal.images // 需要预览的图片http链接列表
+      })
     }
   }
 
   getItems() {
-    if (this.init) {
-      wx.showLoading()
-    }
+    wx.showLoading()
     request('/eggs').get().then(data => {
       var firstCheck = this.init ? 1 : 0
       this.portals = data.portals
@@ -281,11 +464,40 @@ export default class Index extends wepy.page {
       this.history = data.history
       this.init = true
       this.$apply()
-      wx.hideLoading()
+      wx.setStorage({
+        key: 'eggs',
+        data: data
+      })
 
       if (!firstCheck) {
         this.checkPortal()
       }
+    }).catch(err => {
+      var that = this
+      console.log(err)
+      wx.showToast({
+        'title': '出错了...',
+        'icon': 'error'
+      })
+      wx.getStorage({
+        key: 'eggs',
+        success(res) {
+          var data = res.data
+          that.portals = data.portals
+          that.week = data.week
+          that.other = data.other
+          that.longer = data.longer
+          that.history = data.history
+          that.$apply()
+        }
+      })
+    }).finally(res => {
+      wx.hideLoading()
+
+      // apply不生效scroll的triggered
+      this.setData({
+        triggered: false
+      })
     })
   }
 
@@ -318,7 +530,19 @@ export default class Index extends wepy.page {
 
   events = {}
 
+  // 获取用户信息
+  getUserInfo() {
+    request('/userinfo').post().then((res) => {
+      this.userInfo = res
+      this.$apply()
+    })
+  }
+
   onLoad() {
+    // 初始化本地设置
+    this.options = this.$parent.options
+    this.$apply()
+
     var self = this
     if (!wx.getStorageSync('token')) {
       wx.login({
@@ -327,19 +551,20 @@ export default class Index extends wepy.page {
           request('/auth/login', { code }).post().then(({token}) => {
             wx.setStorageSync('token', token)
             self.getItems()
+            self.getUserInfo()
           })
         }
       })
     } else {
       this.getAd()
       this.getItems()
+      this.getUserInfo()
     }
     this.initNotice()
   }
 
-  onPullDownRefresh() {
+  onScrollPullDownRefresh() {
     this.getItems()
-    wx.stopPullDownRefresh()
   }
 
   onShow() {
@@ -434,10 +659,89 @@ export default class Index extends wepy.page {
     this.showCatNumberInput = false
     this.$apply()
   }
+
+  onChooseAvatar(e) {
+    wepy.showLoading({
+      title: '图片上传中...'
+    })
+    // 调用上传图片接口
+    request('/eggs/upload-avatar', {
+      'file_path': e.detail.avatarUrl
+    }).upload().then(data => {
+      if (data.url) {
+        this.formData.avatar = data.url
+        this.$apply()
+      }
+    }).catch(err => {
+      console.log('获取图片地址失败，请稍后重试', err)
+    }).finally(res => {
+      wepy.hideLoading()
+    })
+  }
+
+  sexChange(e) {
+    this.formData.sex = e.detail.value === 1 ? 1 : 2
+    this.$apply()
+  }
+  regionChange(e) {
+    this.formData.province = e.detail.value[0]
+    this.formData.city = e.detail.value[1]
+    this.formData.county = e.detail.value[2]
+    this.$apply()
+  }
+
+  nicknameInput(e) {
+    this.formData.nickname = e.detail.value
+    this.$apply()
+  }
+
+  updateUserInfo() {
+    let err = false
+    if (!this.formData.nickname) {
+      this.formErr.nickname = true
+      err = true
+    }
+    if (!this.formData.avatar) {
+      this.formErr.avatar = true
+      err = true
+    }
+    if (err) {
+      wx.showToast({
+        title: '信息不完整',
+        icon: 'error'
+      })
+      this.$apply()
+      return false
+    }
+    let data = {
+      nickname: this.formData.nickname,
+      avatar: this.formData.avatar,
+      sex: this.formData.sex,
+      province: this.formData.province,
+      city: this.formData.city,
+      county: this.formData.county
+    }
+    this.formErr = []
+    this.$apply()
+    request('/update-userinfo', data).post().then((res) => {
+      wx.showToast({
+        title: '修改成功'
+      })
+      this.userInfo = res
+      this.userInfoEditModal = false
+      this.$apply()
+    })
+  }
 }
 </script>
 
 <style lang="scss">
+  page {
+    background-image: var(--gradualBlue);
+    width: 100vw;
+    overflow: hidden;
+    padding-top: 0;
+  }
 
   .feedback {
     border: none;
@@ -543,7 +847,7 @@ export default class Index extends wepy.page {
         font-size: 12px;
         font-weight: 500;
         text-align: center;
-        margin-bottom: 24px;
+        margin-bottom: 10px;
       }
 
       .cat_number {
@@ -681,6 +985,7 @@ export default class Index extends wepy.page {
             height: 12px;
             vertical-align:middle;
             padding-left: 10px;
+            box-sizing: unset;
           }
         }
       }
@@ -749,6 +1054,7 @@ export default class Index extends wepy.page {
         font-size: 16px;
         font-weight: bold;
         margin-bottom: 3px;
+        display: inline-block;
       }
 
       .field-bottom {
@@ -820,7 +1126,6 @@ export default class Index extends wepy.page {
 
     .share {
       margin: 0;
-      padding: 0;
       border: none;
       padding: 12px 24px;
       display: inline-block;
@@ -840,6 +1145,7 @@ export default class Index extends wepy.page {
         height: 18px;
         vertical-align: middle;
       }
+      font-size: 19px;
     }
 
     .btn {
@@ -992,5 +1298,103 @@ export default class Index extends wepy.page {
         }
       }
     }
+  }
+
+  .DrawerPage {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    left: 0vw;
+    background-color: #f1f1f1;
+    transition: all 0.4s;
+  }
+
+  .DrawerPage.show {
+    transform: scale(0.9, 0.9);
+    left: 87vw;
+    box-shadow: 0 0 60rpx rgba(0, 0, 0, 0.2);
+    transform-origin: 0;
+  }
+
+  .DrawerWindow {
+    position: absolute;
+    width: 85vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    transform: scale(0.9, 0.9) translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s;
+  }
+
+  .DrawerWindow.show {
+    transform: scale(1, 1) translateX(0%);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .DrawerClose {
+    position: absolute;
+    width: 40vw;
+    height: 100vh;
+    right: 0;
+    top: 0;
+    color: transparent;
+    padding-bottom: 30rpx;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.6));
+    letter-spacing: 5px;
+    font-size: 50rpx;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s;
+  }
+
+  .DrawerClose.show {
+    opacity: 1;
+    pointer-events: all;
+    width: 15vw;
+    color: #fff;
+  }
+
+  .DrawerPage .cu-bar.tabbar .action button.icon {
+    width: 64rpx;
+    height: 64rpx;
+    line-height: 64rpx;
+    margin: 0;
+    display: inline-block;
+  }
+
+  .DrawerPage .cu-bar.tabbar .action .cu-avatar {
+    margin: 0;
+  }
+
+  .DrawerPage .nav {
+    flex: 1;
+  }
+
+  .DrawerPage .nav .cu-item.cur {
+    border-bottom: 0;
+    position: relative;
+  }
+
+  .DrawerPage .nav .cu-item.cur::after {
+    content: "";
+    width: 10rpx;
+    height: 10rpx;
+    background-color: currentColor;
+    position: absolute;
+    bottom: 10rpx;
+    border-radius: 10rpx;
+    left: 0;
+    right: 0;
+    margin: auto;
+  }
+
+  .DrawerPage .cu-bar.tabbar .action {
+    flex: initial;
   }
 </style>

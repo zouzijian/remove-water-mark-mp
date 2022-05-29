@@ -1,19 +1,32 @@
 <template>
-  <image class="avatar" src="{{model.female_avatar}}"></image>
+<!--  <image class="avatar" src="{{model.female_avatar}}"></image>-->
+  <view class="cu-avatar-group">
+    <view wx:if="{{ options.showMaleInfo && model.male_avatar }}" class="cu-avatar round" style="background-image:url({{model.male_avatar}});"></view>
+    <view class="cu-avatar round lg" style="background-image:url({{model.female_avatar}});"></view>
+  </view>
   <view class="meta">
-    <view class="field-top">{{model.female_name}}</view>
+    <view class="flex align-center text-lg">
+      <view class="text-bold text-cut pet-name">{{model.female_name}}</view>
+      <view wx:if="{{ options.showMaleInfo && model.male_name}}" class="text-xs text-gray margin-left-xs text-cut pet-name">{{model.male_name}}</view>
+    </view>
+
     <view class="field-bottom" wx:if="{{!model.is_break}}">配种日期: {{model.breeding_at}}</view>
     <view class="field-bottom" wx:else>破壳日期: {{model.cracked_at}}</view>
   </view>
   <span class="day" wx:if="{{!model.is_break}}">
-    <text wx:if="{{model.countdown == 0}}">今日</text>
-    <text wx:if="{{model.countdown > 0}}">{{model.countdown}} 天</text>
-    <text wx:if="{{model.countdown < 0}}" class="danger">{{model.countdown*-1}} 天</text>
+    <text wx:if="{{options.countdownType === 'waiting' && model.countdown === 0}}">今日</text>
+    <text wx:elif="{{options.countdownType === 'waiting' && model.countdown > 0}}">{{model.countdown}} 天</text>
+
+    <text wx:elif="{{options.countdownType === 'leaving' && model.breed_passday === 0}}" class="leaving">今日</text>
+    <text wx:elif="{{options.countdownType === 'leaving' && model.countdown > 0}}" class="leaving">{{model.breed_passday}} 天</text>
+    <text wx:elif="{{model.countdown < 0}}" class="danger">{{model.countdown*-1}} 天</text>
   </span>
   <view class="break" wx:else>
     <image class="field-top" src="../assets/images/birthday-and-party.svg"></image>
-    <text wx:if="{{model.passday == 0}}">今日</text>
-    <text wx:if="{{model.passday > 0}}">{{model.passday}} 天</text>
+    <text wx:if="{{model.passday === 0}}">今日</text>
+    <block wx:elif="{{model.passday > 0}}">
+      <text>{{model.passday/365 > 1 ? ((model.passday/365|Int) + ' 年 ') : ''}}{{model.passday%365}} 天</text>
+    </block>
   </view>
 </template>
 
@@ -22,7 +35,11 @@ import wepy from 'wepy'
 
 export default class Card extends wepy.component {
   props = {
-    model: {}
+    model: {},
+    options: {
+      showMaleInfo: true,
+      countdownType: 'waiting'
+    }
   }
 
   data = {}
@@ -62,6 +79,19 @@ export default class Card extends wepy.component {
           background: #fa9191;
         }
       }
+      &.leaving {
+        color: #cca8e9;
+        &::before {
+          content: 'Already';
+          background: #cca8e9;
+        }
+      }
+    }
+  }
+  .meta{
+    .pet-name {
+      max-width: 80px;
+      display: inline-block;
     }
   }
 </style>
