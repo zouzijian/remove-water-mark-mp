@@ -49,32 +49,17 @@
       </view>
     </view>
   </view>
-  <view class="cropper-panel" wx:if="{{showCropper}}">
-    <cropper :options="cropperOpt" @beforeImageLoad="bl"></cropper>
-<!--    <view class="image-notice">请使用含有猫咪的图片~</view>-->
-<!--    <view class="image-notice">如识别异常请尝试调整裁剪部分或跳过</view>-->
-    <view class="operate">
-      <button class="cancel" @tap="cancel">取消</button>
-      <button @tap="getCropperImage">确认</button>
-    </view>
-  </view>
 </template>
 
 <script>
 import wepy from 'wepy'
 import request from '@/utils/request'
-import Cropper from '@/components/wepy-com-cropper'
-const device = wx.getSystemInfoSync()
-const width = device.windowWidth
-const height = device.windowHeight - 200
-
 export default class Index extends wepy.page {
   config = {
     navigationBarTitleText: '新增记录'
   }
 
   components = {
-    cropper: Cropper
   }
 
   mixins = []
@@ -90,21 +75,7 @@ export default class Index extends wepy.page {
       female_avatar: 'https://m1-1253159997.image.myqcloud.com/images/dX2GQGfuBIV5uPOjk11OdPE5Qx3xJEhFv8ROonZp.jpeg',
       breeding_at: null
     },
-    selectedGender: null,
-    showCropper: false,
-    cropperOpt: {
-      width,
-      height,
-      scale: 2.5,
-      zoom: 8,
-      cut: {
-        x: (width - 200) / 2,
-        y: (height - 200) / 2,
-        width: 200,
-        height: 200
-      },
-      show: false
-    }
+    selectedGender: null
   }
 
   computed = {}
@@ -154,42 +125,35 @@ export default class Index extends wepy.page {
         sizeType: ['compressed'], // 只使用压缩图，加快文件上传速度及模型识别速度。另一方面，识别对于图片质量并无要求
         sourceType: ['album', 'camera'],
         success: (res) => {
-          const src = res.tempFilePaths[0]
-          //  获取裁剪图片资源后，给data添加src属性及其值
-          this.showCropper = true
           this.selectedGender = gender
           this.$apply()
-          this.$invoke('cropper', 'pushOrigin', src)
-        }
-      })
-    },
-    cancel () {
-      this.showCropper = false
-      this.$apply()
-    },
-    getCropperImage () {
-      this.$invoke('cropper', 'getCropperImage').then((src) => {
-        wepy.showLoading({
-          title: '图片识别中...'
-        })
-        // 调用上传图片接口
-        request('/eggs/upload-avatar', {
-          'file_path': src
-        }).upload().then(data => {
-          if (data.url) {
-            if (this.selectedGender === 'female') {
-              this.model.female_avatar = data.url
-            } else if (this.selectedGender === 'male') {
-              this.model.male_avatar = data.url
+          wx.editImage({
+            src: res.tempFilePaths[0],
+            success: res => {
+              // 调用上传图片接口
+              wepy.showLoading({
+                title: '图片上传中...'
+              })
+              request('/eggs/upload-avatar', {
+                'file_path': res.tempFilePath
+              }).upload(res => {
+                console.log(res)
+              }).then(data => {
+                if (data.url) {
+                  if (this.selectedGender === 'female') {
+                    this.model.female_avatar = data.url
+                  } else if (this.selectedGender === 'male') {
+                    this.model.male_avatar = data.url
+                  }
+                  this.showCropper = false
+                  this.$apply()
+                }
+              }).finally(res => {
+                wepy.hideLoading()
+              })
             }
-            this.showCropper = false
-            this.$apply()
-          }
-          wepy.hideLoading()
-        })
-      }).catch(err => {
-        console.log('获取图片地址失败，请稍后重试', err)
-        wepy.hideLoading()
+          })
+        }
       })
     }
   }
@@ -217,8 +181,10 @@ export default class Index extends wepy.page {
     var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1)
     var D = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
     this.today = Y + '-' + M + '-' + D
+    console.log(this.today)
     this.model.breeding_at = this.today
     this.dateDifference()
+    this.$apply()
   }
 }
 </script>
